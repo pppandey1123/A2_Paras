@@ -23,9 +23,9 @@ const upload = multer({ storage: storage });
 app.use(express.urlencoded({ extended: true })); // handle normal forms -> url encoded
 app.use(express.json()); // Handle raw json data
 
-app.get("/", (req, res)=>{
-  res.sendFile(path.join(__dirname, "views", "index.html"))
-})
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "index.html"));
+});
 
 app
   .route("/upload")
@@ -59,7 +59,7 @@ app.get("/fetch-single", (req, res) => {
 
   // NOTE: This reads the directory, not the file, so think about how you can use this for the assignment
   let uploads = fs.readdirSync(upload_dir);
-  console.log(uploads)
+  console.log(uploads);
   // Add error handling
   if (uploads.length == 0) {
     return res.status(503).send({
@@ -75,9 +75,10 @@ app.get("/fetch-single", (req, res) => {
   res.sendFile(path.join(upload_dir, randomImage));
 });
 
-app.get("/single", (req, res)=>{
-  res.sendFile(path.join(__dirname, "views", "single.html"))
-})
+app.get("/single", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "single.html"));
+});
+
 /*
 Need to be implemented:
 You can rename these routes as you need
