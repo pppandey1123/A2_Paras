@@ -157,7 +157,7 @@ app.get('/fetch-all/pages/:index', (req, res) => {
 
 // Gallery with pagination view route
 app.get('/gallery-pagination', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'gallery_pagination.html'));
+  res.sendFile(path.join(__dirname, 'views', 'gallery-pagination.html'));
 });
 
 // 404 Route
