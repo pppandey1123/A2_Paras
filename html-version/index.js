@@ -1,34 +1,37 @@
-/* 
-Your Student information in here
-*/
-require("dotenv").config();
-const express = require("express");
+const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
+
 const app = express();
-const PORT = process.env.PORT || 3000;
-const path = require("path");
-const fs = require("fs");
-const multer = require("multer");
+const PORT = process.env.PORT || 8000;
+
+// Multer storage configuration
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./uploads");
-  },
-  filename: function (req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, 'uploads'));
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`);
+    },
 });
 
 const upload = multer({ storage: storage });
 
-// middleware:
-app.use(express.urlencoded({ extended: true })); // handle normal forms -> url encoded
-app.use(express.json()); // Handle raw json data
+// Middleware setup
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Routes
+
+// Home route
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "index.html"));
 });
 
-app
-  .route("/upload")
+// Single file upload routes
+app.route("/upload")
   .get((req, res) => {
     res.sendFile(path.join(__dirname, "views", "upload.html"));
   })
@@ -36,68 +39,133 @@ app
     if (!req.file) {
       return res.status(400).send("No file uploaded.");
     }
-    res.send(`File uploaded successfully: ${req.file.path}`);
+    console.log(`File uploaded successfully: ${req.file.filename}`);
+    res.send(`File uploaded successfully: ${req.file.filename}`);
   });
 
-app
-  .route("/upload-multiple")
+// Multiple file upload routes
+app.route("/upload-multiple")
   .get((req, res) => {
     res.sendFile(path.join(__dirname, "views", "upload-multiple.html"));
   })
-  .post(upload.array("files", 100), (req, res) => {
+  .post(upload.array("files", 15), (req, res) => {
     if (!req.files || req.files.length === 0) {
       return res.status(400).send("No files uploaded.");
     }
-    const filePaths = req.files.map((file) => file.path);
-    res
-      .status(200)
-      .send(`Files uploaded successfully: ${filePaths.join(", ")}`);
+    const filePaths = req.files.map((file) => file.filename);
+    console.log(`Files uploaded successfully: ${filePaths.join(", ")}`);
+    res.status(200).send(`Files uploaded successfully: ${filePaths.join(", ")}`);
   });
 
+// Fetch single random image
 app.get("/fetch-single", (req, res) => {
   let upload_dir = path.join(__dirname, "uploads");
-
-  // NOTE: This reads the directory, not the file, so think about how you can use this for the assignment
   let uploads = fs.readdirSync(upload_dir);
-  console.log(uploads);
-  // Add error handling
-  if (uploads.length == 0) {
-    return res.status(503).send({
-      message: "No images",
-    });
+  if (uploads.length === 0) {
+    return res.status(503).send({ message: "No images" });
   }
-  let max = uploads.length - 1;
-  let min = 0;
-
-  let index = Math.round(Math.random() * (max - min) + min);
+  let index = Math.floor(Math.random() * uploads.length);
   let randomImage = uploads[index];
-
   res.sendFile(path.join(upload_dir, randomImage));
 });
 
+// Single random image view route
 app.get("/single", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "single.html"));
 });
 
-/*
-Need to be implemented:
-You can rename these routes as you need
+// Fetch multiple random images
+app.get('/fetch-multiple-images', (req, res) => {
+  const uploadDir = path.join(__dirname, 'uploads');
+  fs.readdir(uploadDir, (err, files) => {
+      if (err) {
+          console.error('Error reading directory:', err);
+          return res.status(500).send('Error reading directory');
+      }
+      if (files.length === 0) {
+          return res.status(503).send({ message: 'No Images Found' });
+      }
+      let count = Math.min(req.query.count || 5, files.length);
+      let randomImages = [];
+      while (randomImages.length < count) {
+          let index = Math.floor(Math.random() * files.length);
+          let selectedImage = files.splice(index, 1)[0];
+          randomImages.push(selectedImage);
+      }
+      console.log("Multiple images fetched:", randomImages);
+      res.json(randomImages);
+  });
+});
 
+// Multiple random images view route
+app.get("/multiple", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "fetchmultiple.html"));
+});
 
-/multiple: handle a webpage to grab multiple random images from the server
-/fetch-multiple - This route will grab the multiple photos for the webpage multiple
+// Fetch all images
+app.get('/fetch-all', (req, res) => {
+  const uploadDir = path.join(__dirname, 'uploads');
+  fs.readdir(uploadDir, (err, files) => {
+    if (err) {
+      console.error('Error reading directory:', err);
+      return res.status(500).send('Error reading directory');
+    }
+    if (files.length === 0) {
+      return res.status(503).send({ message: 'No Images Found' });
+    }
+    res.json(files);
+  });
+});
 
-/gallery - showcases all images from the server
-/fetch-all - Grab all items from the upload folder
+// Gallery view route
+app.get('/gallery', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'gallery.html'));
+});
 
-/gallery-pagination - showcase all images from the server, using pagination
-/fetch-all-pagination/pages/:index
-*/
+// Pagination route for gallery
+app.get('/fetch-all/pages/:index', (req, res) => {
+  const ITEMS_PER_PAGE = parseInt(req.query.items_per_page, 10) || 5;
+  const pageIndex = parseInt(req.params.index, 10);
 
-// catch all other requests
+  if (isNaN(pageIndex) || pageIndex < 1) {
+    console.error('Invalid page index:', pageIndex);
+    return res.status(400).send('Invalid page index.');
+  }
+
+  const allFiles = fs.readdirSync(path.join(__dirname, 'uploads'));
+
+  const totalItems = allFiles.length;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+
+  if (pageIndex > totalPages) {
+    console.error('Page not found:', pageIndex);
+    return res.status(404).send('Page not found.');
+  }
+
+  const startIndex = (pageIndex - 1) * ITEMS_PER_PAGE;
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
+  const pageItems = allFiles.slice(startIndex, endIndex);
+
+  const response = {
+    page: pageIndex,
+    totalPages: totalPages,
+    files: pageItems,
+  };
+
+  res.json(response);
+});
+
+// Gallery with pagination view route
+app.get('/gallery-pagination', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'gallery_pagination.html'));
+});
+
+// 404 Route
 app.use((req, res) => {
   res.status(404).send("Route not found");
 });
+
+// Start server
 app.listen(PORT, () => {
-  console.log(`http://localhost:${PORT}`);
+  console.log(`Server is running at http://localhost:${PORT}`);
 });

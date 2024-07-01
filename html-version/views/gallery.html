@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f0f0f0;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Image Gallery Styles */
+        #image_container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            justify-items: center;
+            margin-top: 20px;
+        }
+
+        #image_container img {
+            width: 100%;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #image_container img:hover {
+            transform: scale(1.05);
+            border-color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gallery</h1>
+    <div id="image_container"></div>
+
+    <script>
+        fetch("/fetch-all")
+            .then(response => response.json())
+            .then(images => {
+                const container = document.getElementById("image_container");
+                container.innerHTML = "";
+                images.forEach(image => {
+                    const img = document.createElement("img");
+                    img.src = `./uploads/${image}`;
+                    img.onerror = () => console.error(`Error loading image: ${img.src}`);
+                    container.appendChild(img);
+                });
+            })
+            .catch(error => console.error("Error fetching images:", error));
+    </script>
+</body>
+</html>

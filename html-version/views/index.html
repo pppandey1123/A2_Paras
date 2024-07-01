@@ -1,17 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Upload and Management</title>
+    <style>
+    
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        a {
+            display: block;
+            color: #22149e;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+
+    </style>
 </head>
 <body>
-    <h1>Welcome to File Upload and Management</h1>
-    <ul>
-        <li><a href="/upload">Upload a Single File</a></li>
-        <li><a href="/upload-multiple">Upload Multiple Files</a></li>
-        <li><a href="/single">Fetch a Random File</a></li>
-        <!-- <li><a href="/fetch-multiple.html">Fetch Multiple Random Files</a></li> -->
-        <!-- <li><a href="/gallery">View Gallery of All Files</a></li> -->
-        <!-- <li><a href="/gallery-pagination.html">View Gallery with Pagination</a></li> -->
-    </ul>
+    <div class="container">
+        <h1>File Upload and Management</h1>
+        <ul>
+            <li><a href="/upload">Upload Single Image</a></li>
+            <li><a href="/upload-multiple">Upload Multiple Images</a></li>
+            <li><a href="/single">View Random Image</a></li>
+            <li><a href="/multiple">View Multiple Random Images</a></li>
+            <li><a href="/gallery">View Gallery</a></li>
+            <li><a href="/gallery-pagination">View Gallery with Pagination</a></li>
+        </ul>
+    </div>
 </body>
 </html>
